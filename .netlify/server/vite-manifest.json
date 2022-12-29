@@ -4,7 +4,8 @@
     "src": ".svelte-kit/build/index.js",
     "isEntry": true,
     "imports": [
-      "_index.js"
+      "_index.js",
+      "_index2.js"
     ],
     "dynamicImports": [
       ".svelte-kit/build/hooks.js"
@@ -18,7 +19,7 @@
       "_index.js"
     ],
     "css": [
-      "_app/immutable/assets/_layout-2bc8aad7.css"
+      "_app/immutable/assets/_layout-97134004.css"
     ]
   },
   "node_modules/@sveltejs/kit/src/runtime/components/error.svelte": {
@@ -48,6 +49,58 @@
       "_index.js"
     ]
   },
+  "src/routes/file-sharing/+page.svelte": {
+    "file": "entries/pages/file-sharing/_page.svelte.js",
+    "src": "src/routes/file-sharing/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index.js"
+    ],
+    "css": [
+      "_app/immutable/assets/_page-96fede70.css"
+    ]
+  },
+  "src/routes/muazkhan/+page.svelte": {
+    "file": "entries/pages/muazkhan/_page.svelte.js",
+    "src": "src/routes/muazkhan/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index.js"
+    ]
+  },
+  "src/routes/receive/+page.svelte": {
+    "file": "entries/pages/receive/_page.svelte.js",
+    "src": "src/routes/receive/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index.js"
+    ]
+  },
+  "src/routes/record/+page.svelte": {
+    "file": "entries/pages/record/_page.svelte.js",
+    "src": "src/routes/record/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index.js"
+    ]
+  },
+  "src/routes/send/+page.svelte": {
+    "file": "entries/pages/send/_page.svelte.js",
+    "src": "src/routes/send/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index.js"
+    ]
+  },
+  "src/routes/tess/+page.svelte": {
+    "file": "entries/pages/tess/_page.svelte.js",
+    "src": "src/routes/tess/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_index.js",
+      "_index2.js"
+    ]
+  },
   ".svelte-kit/build/hooks.js": {
     "file": "chunks/hooks.js",
     "src": ".svelte-kit/build/hooks.js",
@@ -55,5 +108,11 @@
   },
   "_index.js": {
     "file": "chunks/index.js"
+  },
+  "_index2.js": {
+    "file": "chunks/index2.js",
+    "imports": [
+      "_index.js"
+    ]
   }
 }

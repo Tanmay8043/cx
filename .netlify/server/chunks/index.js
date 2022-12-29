@@ -178,6 +178,13 @@ function escape_object(obj) {
   }
   return result;
 }
+function each(items, fn) {
+  let str = "";
+  for (let i = 0; i < items.length; i += 1) {
+    str += fn(items[i], i);
+  }
+  return str;
+}
 const missing_component = {
   $$render: () => ""
 };
@@ -245,6 +252,7 @@ export {
   escape_attribute_value as i,
   add_attribute as j,
   createEventDispatcher as k,
+  each as l,
   missing_component as m,
   noop as n,
   onDestroy as o,
