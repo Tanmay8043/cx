@@ -12,7 +12,6 @@
     // Source Code   - https://github.com/muaz-khan/RTCMultiConnection
 
     import {onMount} from "svelte";
-    import {FileSelector} from "$lib/FileSelector.js"
     onMount(async()=>{
 
         window.addEventListener('online', function() {
@@ -84,11 +83,6 @@
               return;
             }
 
-            var fileSelector = new FileSelector();
-            fileSelector.selectSingleFile(function(file) {
-                previewFile(file);
-                onFileSelected(file);
-            });
         };
 
         var lastSelectedFile;
