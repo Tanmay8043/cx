@@ -1,12 +1,5 @@
 <svelte:head>
-    <!-- recommended -->
 <script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
-
-<!-- use 5.6.2 or any other version on cdnjs -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/RecordRTC/5.6.2/RecordRTC.js"></script>
-
-<!-- NPM i.e. "npm install recordrtc" -->
-<script src="node_modules/recordrtc/RecordRTC.js"></script>
 </svelte:head>
 
 
@@ -30,12 +23,25 @@
         let blob = await recorder.getBlob();
         invokeSaveAsDialog(blob);
     }
+
+    const screenShare=async ()=>{
+        var screen = await navigator.mediaDevices.getDisplayMedia({video: true});
+        document.querySelector("video").srcObject = screen;
+    }
 </script>
-<p>Record your video</p>
-<video class="w-80 h-80" autoplay playsinline muted></video>
-<button on:click={startREC} class="border-2 m-2 px-2 py-1 rounded-lg">Click to RECORD</button>
+<div class="p-4">
+    <p class="text-xl font-bold">Record your video</p>
+    <video class="w-2/5 mx-auto bg-gray-400" autoplay playsinline muted></video>
+    <button on:click={startREC} class="border-2 m-2 px-2 py-1 rounded-lg">Click to RECORD</button>
 
-<button on:click={stopREC} class="border-2 m-2 px-2 py-1 rounded-lg">Stop</button>
+    <button on:click={stopREC} class="border-2 m-2 px-2 py-1 rounded-lg">Stop</button>
+
+    <br/>
+    <hr/>
 
 
-<hr/>
+    <p class="text-xl font-bold">Share your Screen</p>
+
+    <button class="border-2 rounded px-2 py-1 m-2" on:click={screenShare}>Share Screen</button>
+    <video class="w-3/5 mx-auto bg-gray-400" autoplay playsinline muted></video>
+</div>
