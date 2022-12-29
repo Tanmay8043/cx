@@ -19,10 +19,15 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@syncedstore/core": "^0.4.2",
+		"@syncedstore/svelte": "^0.4.2",
 		"firebase": "^9.15.0",
 		"peerjs": "^1.4.7",
 		"rxdb": "^13.15.3",
 		"rxjs": "^7.8.0",
-		"sveltestrap": "^5.10.0"
+		"simple-peer": "^9.11.1",
+		"sveltestrap": "^5.10.0",
+		"y-webrtc": "^10.1.8",
+		"yjs": "^13.5.13"
 	}
 }

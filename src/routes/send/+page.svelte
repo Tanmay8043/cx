@@ -1,39 +1,256 @@
 <script>
+        import {onMount} from "svelte";
     import {browser} from "$app/environment"
-let Peer;
-var conn;
+
+    let Peer;
 
 if (browser) {
-  usePeer();
+  initialize();
 }
 
-async function usePeer() {
-  const mod = await import("peerjs");
+    var lastPeerId = null;
+    var peer = null; // own peer object
+    var conn = null;
+    var recvIdInput,
+status,
+message,
+goButton,
+resetButton,
+fadeButton,
+offButton,
+sendMessageBox,
+sendButton,
+clearMsgsButton,
+connectButton,
+cueString;
+
+onMount(async()=>{
+    recvIdInput = document.getElementById("receiver-id");
+    status = document.getElementById("status");
+    message = document.getElementById("message");
+    goButton = document.getElementById("goButton");
+    resetButton = document.getElementById("resetButton");
+    fadeButton = document.getElementById("fadeButton");
+    offButton = document.getElementById("offButton");
+    sendMessageBox = document.getElementById("sendMessageBox");
+    sendButton = document.getElementById("sendButton");
+    clearMsgsButton = document.getElementById("clearMsgsButton");
+    connectButton = document.getElementById("connect-button");
+    cueString = "<span class=\"cueMsg\">Cue: </span>";
+// Listen for enter in message box
+sendMessageBox.addEventListener('keypress', function (e) {
+        var event = e || window.event;
+        var char = event.which || event.keyCode;
+        if (char == '13')
+            sendButton.click();
+    });
+    // Send message
+    sendButton.addEventListener('click', function () {
+        if (conn && conn.open) {
+            var msg = sendMessageBox.value;
+            sendMessageBox.value = "";
+            conn.send(msg);
+            console.log("Sent: " + msg);
+            addMessage("<span class=\"selfMsg\">Self: </span> " + msg);
+        } else {
+            console.log('Connection is closed');
+        }
+    });
+
+    // Clear messages box
+    clearMsgsButton.addEventListener('click', clearMessages);
+    // Start peer connection on click
+    connectButton.addEventListener('click', join);
+
+
+    goButton.addEventListener('click', function () {
+        signal("Go");
+    });
+    resetButton.addEventListener('click', function () {
+        signal("Reset");
+    });
+    fadeButton.addEventListener('click', function () {
+        signal("Fade");
+    });
+    offButton.addEventListener('click', function () {
+        signal("Off");
+    });
+})
+
+    async function initialize() {
+
+        const mod = await import("peerjs");
   Peer = mod.default;
-  // blah
+                    // Create own peer object with connection to shared PeerJS server
+                    peer = new Peer(null, {
+                        debug: 2
+                    });
 
-}
+                    peer.on('open', function (id) {
+                        // Workaround for peer.reconnect deleting previous id
+                        if (peer.id === null) {
+                            console.log('Received null id from peer open');
+                            peer.id = lastPeerId;
+                        } else {
+                            lastPeerId = peer.id;
+                        }
 
-const sendFile=(event)=>{
-    
+                        console.log('ID: ' + peer.id);
+                    });
+                    peer.on('connection', function (c) {
+                        // Disallow incoming connections
+                        c.on('open', function() {
+                            c.send("Sender does not accept incoming connections");
+                            setTimeout(function() { c.close(); }, 500);
+                        });
+                    });
+                    peer.on('disconnected', function () {
+                        status.innerHTML = "Connection lost. Please reconnect";
+                        console.log('Connection lost. Please reconnect');
 
-}
+                        // Workaround for peer.reconnect deleting previous id
+                        peer.id = lastPeerId;
+                        peer._lastServerId = lastPeerId;
+                        peer.reconnect();
+                    });
+                    peer.on('close', function() {
+                        conn = null;
+                        status.innerHTML = "Connection destroyed. Please refresh";
+                        console.log('Connection destroyed');
+                    });
+                    peer.on('error', function (err) {
+                        console.log(err);
+                        alert('' + err);
+                    });
+                };
+
+    function join() {
+                    // Close old connection
+        if (conn) {
+            conn.close();
+        }
+
+        // Create connection to destination peer specified in the input field
+        conn = peer.connect(recvIdInput.value, {
+            reliable: true
+        });
+
+        conn.on('open', function () {
+            status.innerHTML = "Connected to: " + conn.peer;
+            console.log("Connected to: " + conn.peer);
+
+            // Check URL params for comamnds that should be sent immediately
+            var command = getUrlParam("command");
+            if (command)
+                conn.send(command);
+        });
+        // Handle incoming data (messages only since this is the signal sender)
+        conn.on('data', function (data) {
+            addMessage("<span class=\"peerMsg\">Peer:</span> " + data);
+        });
+        conn.on('close', function () {
+            status.innerHTML = "Connection closed";
+        });
+    };
+
+    /**
+        * Get first "GET style" parameter from href.
+        * This enables delivering an initial command upon page load.
+        *
+        * Would have been easier to use location.hash.
+        */
+    function getUrlParam(name) {
+        name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+        var regexS = "[\\?&]" + name + "=([^&#]*)";
+        var regex = new RegExp(regexS);
+        var results = regex.exec(window.location.href);
+        if (results == null)
+            return null;
+        else
+            return results[1];
+    };
+
+    /**
+        * Send a signal via the peer connection and add it to the log.
+        * This will only occur if the connection is still alive.
+        */
+        function signal(sigName) {
+        if (conn && conn.open) {
+            conn.send(sigName);
+            console.log(sigName + " signal sent");
+            addMessage(cueString + sigName);
+        } else {
+            console.log('Connection is closed');
+        }
+    }
+
+
+    function addMessage(msg) {
+        var now = new Date();
+        var h = now.getHours();
+        var m = addZero(now.getMinutes());
+        var s = addZero(now.getSeconds());
+
+        if (h > 12)
+            h -= 12;
+        else if (h === 0)
+            h = 12;
+
+        function addZero(t) {
+            if (t < 10)
+                t = "0" + t;
+            return t;
+        };
+
+        message.innerHTML = "<br><span class=\"msg-time\">" + h + ":" + m + ":" + s + "</span>  -  " + msg + message.innerHTML;
+    };
+
+    function clearMessages() {
+        message.innerHTML = "";
+        addMessage("Msgs cleared");
+    };
+
+                
 </script>
 
 
-<input type="file" accept="image/*" on:change={(event)=>{
-    const peer = new Peer('sender', { host: 'localhost', port: 5173, path: '/' })
+<h1>Peer-to-Peer Cue System --- Sender</h1>
 
-conn = peer.connect('receiver')
-    const file = event.target.files[0]
-    const reader = new FileReader();
-        reader.onloadend = () => {
-            conn.send({
-      file: reader.result,
-      filename: file.name,
-      filetype: file.type
-    })            // Logs data:<type>;base64,wL2dvYWwgbW9yZ...
-        };
-        reader.readAsDataURL(file);
-
-}}>
+<table class="control">
+    <tr>
+        <td class="title">Status:</td>
+        <td class="title">Messages:</td>
+    </tr>
+    <tr>
+        <td>
+            <span style="font-weight: bold">ID: </span>
+            <input type="text" id="receiver-id" title="Input the ID from receive.html">
+            <button id="connect-button">Connect</button>
+        </td>
+        <td>
+            <input type="text" id="sendMessageBox" placeholder="Enter a message..." autofocus="true" />
+            <button type="button" id="sendButton">Send</button>
+            <button type="button" id="clearMsgsButton">Clear Msgs (Local)</button>
+        </td>
+    </tr>
+    <tr>
+        <td><div id="status" class="status"></div></td>
+        <td><div class="message" id="message"></div></td>
+    </tr>
+    <tr>
+        <td>
+            <button type="button" class="control-button" id="resetButton">Reset</button>
+        </td>
+        <td>
+            <button type="button" class="control-button" id="goButton">Go</button>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <button type="button" class="control-button" id="fadeButton">Fade</button>
+        </td>
+        <td>
+            <button type="button" class="control-button" id="offButton">Off</button>
+        </td>
+    </tr>
+</table>
